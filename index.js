@@ -3,6 +3,9 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const config = require('./config');
 
+app.use(express.json());
+app.use(cors());
+app.use(bodyparser.json());
 const app = express();
 const port = config.port;
 
@@ -10,8 +13,24 @@ const pool = new Pool({
   connectionString: config.urlConnection
 });
 
-app.use(cors());
-app.use(express.json());
+var conString = config.urlConnection;
+var client = new Client(conString);
+client.connect( (err) => {
+ if(err) {
+ return console.error('Não foi possível conectar ao banco.', err);
+ }
+ client.query('SELECT NOW()', (err, result) => {
+ if(err) {
+ return console.error('Erro ao executar a query.', err);
+ }
+ console.log(result.rows[0]);
+ });
+});
+
+app.get("/", (req, res) => {
+  console.log("Response ok.");
+  res.send("Ok – Servidor disponível.");
+ });
 
 // Endpoint para obter todas as tarefas
 app.get('/tarefas', async (req, res) => {
